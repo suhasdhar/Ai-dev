@@ -1,14 +1,14 @@
-from dotenv import load_dotenv
-import os
-from langchain.chat_models import init_chat_model
+from fastapi import FastAPI
+from pydantic import BaseModel
+from chat import ChatBot
 
+app = FastAPI()
+bot = ChatBot()  # initialized once per worker
 
-load_dotenv()
+class ChatRequest(BaseModel):
+    message: str
 
-key = os.getenv("GEMINI_API_KEY");
-os.environ["GOOGLE_API_KEY"] = key
-
-model = init_chat_model("google_genai:gemini-2.5-flash-lite")
-
-response = model.invoke("Why do parrots talk?")
-print(response)
+@app.post("/chat")
+def chat(req: ChatRequest):
+    reply = bot.chat(req.message)
+    return {"reply": reply}
